@@ -88,31 +88,54 @@
 
 <script>
   // =========== CONFIG ===========
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw1H4abZDt74guvJHxCR9pu9JPfW8Q1mj_rsGcOsI6A8wnTmphyIP7ycLJCE5tvztKt9Q/exec"; // pega la url de tu Apps Script /exec
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzL_HupQnFLA1ft4hKOSEeGoEcqTnKrvetwfBHz5_Pj2GSiRnyTQ1J9V_K1IDCUL4HjQg/exec"; 
   // ==============================
   let currentUser = null;
 
   // util fetch wrapper
   async function api(path, method='GET', body=null){
-    const url = SCRIPT_URL + (path ? "?path=" + encodeURIComponent(path) : "");
-    const opts = { method: method, headers: { "Content-Type": "application/json" } };
-    if (body) opts.body = JSON.stringify(body);
-    const res = await fetch(url, opts);
-    const j = await res.json();
-    return j;
+    try {
+      const url = SCRIPT_URL + (path ? "?path=" + encodeURIComponent(path) : "");
+      const opts = { 
+        method, 
+        headers: { "Content-Type": "application/json" } 
+      };
+      if (body) opts.body = JSON.stringify(body);
+
+      const res = await fetch(url, opts);
+
+      // manejar errores de CORS / red
+      if (!res.ok) throw new Error("Error HTTP " + res.status);
+
+      const j = await res.json();
+      return j;
+    } catch (err) {
+      console.error("API error:", err);
+      return { ok:false, error: "No se pudo conectar al servidor ("+err.message+")" };
+    }
   }
 
   // login
   document.getElementById('btnLogin').addEventListener('click', async ()=>{
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value.trim();
+
     const r = await api('login','POST',{email,password});
-    if (r.ok){ currentUser = r.user; showApp(); loadPilotos(); document.getElementById('userName').innerText = currentUser.nombre_completo || currentUser.email; }
-    else document.getElementById('loginMsg').innerText = "Error: " + r.error;
+    if (r.ok){ 
+      currentUser = r.user; 
+      showApp(); 
+      loadPilotos(); 
+      document.getElementById('userName').innerText = currentUser.nombre_completo || currentUser.email; 
+    } else {
+      document.getElementById('loginMsg').innerText = "Error: " + r.error;
+    }
   });
 
+  // logout
   document.getElementById('btnLogout').addEventListener('click', ()=>{
-    currentUser = null; document.getElementById('appView').classList.add('hidden'); document.getElementById('loginView').classList.remove('hidden');
+    currentUser = null; 
+    document.getElementById('appView').classList.add('hidden'); 
+    document.getElementById('loginView').classList.remove('hidden');
   });
 
   function showApp(){
@@ -125,6 +148,7 @@
   document.querySelectorAll('.menuBtn').forEach(b=>{
     b.addEventListener('click', ()=> showView(b.dataset.view));
   });
+
   function showView(id){
     document.querySelectorAll('.view').forEach(v=> v.classList.add('hidden'));
     document.getElementById(id).classList.remove('hidden');
@@ -133,13 +157,23 @@
   // PILOTOS - carga lista
   async function loadPilotos(){
     const r = await api('getPilotos');
-    if (!r || !Array.isArray(r)) { document.getElementById('pilotosList').innerText = 'Error al cargar'; return; }
+    if (!r || !Array.isArray(r)) { 
+      document.getElementById('pilotosList').innerText = 'Error al cargar: ' + (r.error || "Respuesta inválida");
+      return; 
+    }
     const container = document.getElementById('pilotosList');
     container.innerHTML = '';
     r.forEach(p=>{
       const div = document.createElement('div');
       div.className = "list-item";
-      div.innerHTML = `<div class="row"><img class="badge" src="${p.foto_url || 'https://via.placeholder.com/36'}" alt=""><div><strong>${p.nombre_completo||p.email}</strong><br><small>${p.nuim || ''}</small></div></div>
+      div.innerHTML = `
+        <div class="row">
+          <img class="badge" src="${p.foto_url || 'https://via.placeholder.com/36'}" alt="">
+          <div>
+            <strong>${p.nombre_completo||p.email}</strong><br>
+            <small>${p.nuim || ''}</small>
+          </div>
+        </div>
         <div><button class="btn" onclick='openPerfil("${p.id}")'>Ver perfil</button></div>`;
       container.appendChild(div);
     });
@@ -147,23 +181,22 @@
 
   // abrir perfil (esqueleto)
   window.openPerfil = async function(pilotoId){
-    // buscar en la lista cargada o pedir al API una ruta específica (no implementada en backend demo)
     const r = await api('getPilotos');
     const piloto = r.find(x => x.id === pilotoId);
     if (!piloto) return alert('Piloto no encontrado');
     showModal(`<h3>Perfil: ${piloto.nombre_completo}</h3>
-      <img src="${piloto.foto_url||''}" style="width:120px"><p>Rango: ${piloto.rango_id || ''}</p>
+      <img src="${piloto.foto_url||''}" style="width:120px">
+      <p>Rango: ${piloto.rango_id || ''}</p>
       <p>NUIM: ${piloto.nuim || ''}</p>
       <p>Nacimiento: ${piloto.fecha_nacimiento || ''}</p>
       <p>Teléfono: ${piloto.telefono || ''}</p>
       <p>Tipo sangre: ${piloto.tipo_sangre || ''}</p>
       <hr>
       <div><button class="btn" onclick="editPiloto('${piloto.id}')">Editar piloto</button></div>
-      `);
+    `);
   };
 
   function editPiloto(id){
-    // implementar formulario de edición que haga POST a addPiloto o update (update no implementado en ejemplo)
     alert("Función editar no implementada en este ejemplo. Edita en Sheets por ahora.");
   }
 
@@ -186,20 +219,25 @@
   });
 
   window.submitAddPiloto = async function(){
-    const nombre = document.getElementById('np_nombre').value;
-    const email = document.getElementById('np_email').value;
-    const nuim = document.getElementById('np_nuim').value;
-    const rango = document.getElementById('np_rango').value;
-    const foto = document.getElementById('np_foto').value;
-    const payload = { nombre_completo: nombre, email: email, nuim: nuim, rango_id: rango, foto_url: foto, password: "12345" };
+    const payload = { 
+      nombre_completo: document.getElementById('np_nombre').value, 
+      email: document.getElementById('np_email').value, 
+      nuim: document.getElementById('np_nuim').value, 
+      rango_id: document.getElementById('np_rango').value, 
+      foto_url: document.getElementById('np_foto').value, 
+      password: "12345" 
+    };
     const r = await api('addPiloto','POST', payload);
-    if (r.ok){ alert('Piloto agregado: ' + r.id); document.getElementById('modal').classList.add('hidden'); loadPilotos(); }
-    else alert('Error: ' + r.error);
+    if (r.ok){ 
+      alert('Piloto agregado: ' + r.id); 
+      document.getElementById('modal').classList.add('hidden'); 
+      loadPilotos(); 
+    } else {
+      alert('Error: ' + r.error);
+    }
   };
 
-  // carga inicial (si tuvieras token local, restaurar sesión)
-  // loadPilotos(); // no cargar hasta login
-
 </script>
+
 </body>
 </html>
