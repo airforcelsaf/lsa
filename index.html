@@ -108,14 +108,14 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxAKkMlST3nhKO4uitXN
       }
     }
 async function apiGet(action, params={}) {
-  const url = new URL(WEB_APP_URL);
+  const url = new URL(SCRIPT_URL);
   url.searchParams.set('action', action);
   for(const k in params) url.searchParams.set(k, params[k]);
   const res = await fetch(url);
   return res.json();
 }
 async function apiPost(action, payload) {
-  const res = await fetch(WEB_APP_URL, {
+  const res = await fetch(SCRIPT_URL, {
     method:'POST',
     body: JSON.stringify(Object.assign({action}, payload)),
     headers:{'Content-Type':'application/json'}
@@ -616,7 +616,7 @@ async function renderResumen(){
     const p = await apiGet('ping');
     console.log('backend ping', p);
   } catch(err){
-    console.warn('No se pudo contactar backend. Asegúrate de haber desplegado el Apps Script y de haber reemplazado WEB_APP_URL');
+    console.warn('No se pudo contactar backend. Asegúrate de haber desplegado el Apps Script y de haber reemplazado SCRIPT_URL');
   }
 })();
 </script>
