@@ -73,35 +73,40 @@
   </div>
 
 <script>
-const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzChlaESgzlmUsgsR0Bt6QsSMXQykXMIXdMClJCqrf8S-TF-vEfxYBU4ocd6upuPjSB/exec'; // <-- REEMPLAZAR
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbypqH7JEd-Z3Q6_8FkRBe85XR9QpAhn2VIfWcpS5E18vSyw35qsqoIMWE8kuihkL1LQ8w/exec'; // <-- REEMPLAZAR
 let CURRENT_USER = null;
 
 // util fetch
  async function login() {
-  const email = document.getElementById("email").value.trim(); // elimina espacios
-  const password = document.getElementById("password").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value.trim();
+      const msgBox = document.getElementById("msg");
 
-  if (!email || !password) {
-    document.getElementById("msg").innerHTML = "❌ Ingresa correo y contraseña";
-    return;
-  }
+      if (!email || !password) {
+        msgBox.innerHTML = "❌ Ingresa correo y contraseña";
+        msgBox.style.color = "red";
+        return;
+      }
 
-  const res = await fetch(`${SCRIPT_URL}?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`);
-  const data = await res.json();
+      try {
+        const res = await fetch(`${SCRIPT_URL}?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`);
+        const data = await res.json();
 
-  const msgBox = document.getElementById("msg");
-
-  if (data.status === "success") {
-    msgBox.innerHTML = "✅ Bienvenido " + data.piloto + " (NUIM: " + data.nuim + ")";
-    msgBox.style.color = "lightgreen";
-    // Redirigir a la lista de pilotos
-    // window.location.href = "pilotos.html";
-  } else {
-    msgBox.innerHTML = "❌ " + data.message;
-    msgBox.style.color = "red";
-  }
-}
-
+        if (data.status === "success") {
+          msgBox.innerHTML = "✅ Bienvenido " + data.piloto + " (NUIM: " + data.nuim + ")";
+          msgBox.style.color = "lightgreen";
+          // Redirigir a lista de pilotos
+          // window.location.href = "pilotos.html";
+        } else {
+          msgBox.innerHTML = "❌ " + data.message;
+          msgBox.style.color = "red";
+        }
+      } catch(err) {
+        msgBox.innerHTML = "❌ Error de conexión";
+        msgBox.style.color = "red";
+        console.error(err);
+      }
+    }
 async function apiGet(action, params={}) {
   const url = new URL(WEB_APP_URL);
   url.searchParams.set('action', action);
