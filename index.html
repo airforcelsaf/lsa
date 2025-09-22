@@ -77,25 +77,31 @@ const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyZEE4iYTZ9qt1DNgog
 let CURRENT_USER = null;
 
 // util fetch
-  async function login() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
+ async function login() {
+  const email = document.getElementById("email").value.trim(); // elimina espacios
+  const password = document.getElementById("password").value.trim();
 
-      const res = await fetch(`${SCRIPT_URL}?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`);
-      const data = await res.json();
+  if (!email || !password) {
+    document.getElementById("msg").innerHTML = "❌ Ingresa correo y contraseña";
+    return;
+  }
 
-      const msgBox = document.getElementById("msg");
+  const res = await fetch(`${SCRIPT_URL}?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`);
+  const data = await res.json();
 
-      if (data.status === "success") {
-        msgBox.innerHTML = "✅ Bienvenido " + data.piloto + " (NUIM: " + data.nuim + ")";
-        msgBox.style.color = "lightgreen";
-        // aquí puedes redirigir a otra página
-        // window.location.href = "pilotos.html";
-      } else {
-        msgBox.innerHTML = "❌ " + data.message;
-        msgBox.style.color = "red";
-      }
-    }
+  const msgBox = document.getElementById("msg");
+
+  if (data.status === "success") {
+    msgBox.innerHTML = "✅ Bienvenido " + data.piloto + " (NUIM: " + data.nuim + ")";
+    msgBox.style.color = "lightgreen";
+    // Redirigir a la lista de pilotos
+    // window.location.href = "pilotos.html";
+  } else {
+    msgBox.innerHTML = "❌ " + data.message;
+    msgBox.style.color = "red";
+  }
+}
+
 async function apiGet(action, params={}) {
   const url = new URL(WEB_APP_URL);
   url.searchParams.set('action', action);
