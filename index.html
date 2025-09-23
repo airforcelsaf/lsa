@@ -1,74 +1,504 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Login LSAF</title>
+  <meta charset="utf-8" />
+  <title>LSAF - App</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background:#0a1931;
-      color:white;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      height:100vh;
+    :root{
+      --bg:#021532;
+      --panel:#0b2340;
+      --accent:#2b6fd6;
+      --text:#e9f4ff;
+      --muted:#9fb9d9;
     }
-    .login-box {
-      background:#1e3a8a;
-      padding:30px;
-      border-radius:15px;
-      box-shadow:0 0 10px black;
-      width:300px;
-    }
-    h2 { text-align:center; margin-bottom:20px; }
-    input { width:100%; padding:10px; margin:10px 0; border:none; border-radius:5px; }
-    button { width:100%; padding:10px; background:#2563eb; color:white; border:none; border-radius:5px; cursor:pointer; }
-    button:hover { background:#1d4ed8; }
-    .msg { margin-top:15px; text-align:center; font-size:14px; }
+    body{font-family:Inter, Arial; background:linear-gradient(180deg,var(--bg),#06223d); color:var(--text); margin:0; padding:20px;}
+    .container{max-width:1100px;margin:0 auto;}
+    header{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+    .brand{display:flex;align-items:center;gap:12px;}
+    .logo{width:56px;height:56px;background:var(--panel);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:bold;color:var(--accent);}
+    h1{margin:0;font-size:20px}
+    .card{background:linear-gradient(180deg, rgba(11,35,64,0.7), rgba(4,18,34,0.7)); border-radius:10px;padding:12px;box-shadow:0 6px 18px rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.03)}
+    .grid{display:grid;grid-template-columns:1fr 320px;gap:16px}
+    .list{display:flex;flex-direction:column;gap:10px}
+    .pilot{display:flex;align-items:center;gap:12px;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02)}
+    .pilot img{width:56px;height:56px;border-radius:6px;object-fit:cover}
+    .small{font-size:12px;color:var(--muted)}
+    button{background:var(--accent);border:none;color:white;padding:8px 10px;border-radius:6px;cursor:pointer}
+    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.06)}
+    input,select{padding:8px;border-radius:6px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:var(--text);width:100%}
+    .topbar{display:flex;gap:8px;align-items:center}
+    .nav{display:flex;gap:8px}
+    .hidden{display:none}
+    .cols{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .center{text-align:center}
+    a.link{color:var(--accent); text-decoration:underline}
+    footer{margin-top:18px;color:var(--muted);font-size:13px}
   </style>
 </head>
 <body>
-  <div class="login-box">
-    <h2>LSAF - Ingreso</h2>
-    <input type="email" id="email" placeholder="Correo">
-    <input type="password" id="password" placeholder="Contraseña">
-    <button onclick="login()">Entrar</button>
-    <div class="msg" id="msg"></div>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="logo">LSAF</div>
+        <div>
+          <h1>LSAF - Panel de Gestión</h1>
+          <div class="small">Interfaz demo en Español · Estilo Air Force</div>
+        </div>
+      </div>
+      <div id="userArea" class="card topbar">
+        <div id="loggedInfo" class="hidden">
+          <div id="userName" style="margin-right:12px"></div>
+          <button id="logoutBtn" class="btn-ghost">Cerrar sesión</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- LOGIN -->
+    <div id="loginView" class="card">
+      <h3>Iniciar sesión (demo)</h3>
+      <div class="cols" style="margin-top:10px">
+        <div>
+          <label>Email</label><input id="loginEmail" value="admin@lsaf.gov.us"/>
+        </div>
+        <div>
+          <label>Contraseña</label><input id="loginPassword" type="password" value="Admin123"/>
+        </div>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px">
+        <button id="loginBtn">Entrar</button>
+        <button id="demoFill" class="btn-ghost">Autocompletar demo</button>
+      </div>
+      <div id="loginMsg" class="small" style="margin-top:8px;color:#f88"></div>
+    </div>
+
+    <!-- APP -->
+    <div id="appView" class="hidden">
+      <div class="grid" style="margin-top:12px">
+        <div>
+          <!-- NAV -->
+          <div style="display:flex;gap:8px;margin-bottom:12px">
+            <div class="nav card">
+              <button id="navPilotos">Pilotos</button>
+              <button id="navAeronaves">Aeronaves</button>
+              <button id="navLibros">Libros</button>
+              <button id="navSolicitudes">Solicitudes</button>
+              <button id="navRangos">Rangos</button>
+              <button id="navResumen">Resumen</button>
+            </div>
+            <div style="flex:1"></div>
+            <div class="card" style="display:flex;align-items:center;gap:8px">
+              <button id="addPilotBtn">AGREGAR PILOTO</button>
+            </div>
+          </div>
+
+          <!-- CONTENT -->
+          <div id="contentArea" class="card" style="min-height:480px">
+            <!-- Pilotos view -->
+            <div id="pilotosView" class="">
+              <h3>Pilotos</h3>
+              <div id="pilotsList" class="list" style="margin-top:8px"></div>
+            </div>
+
+            <!-- Aeronaves view -->
+            <div id="aeronavesView" class="hidden">
+              <h3>Aeronaves</h3>
+              <div id="aeronavList" class="list" style="margin-top:8px"></div>
+              <div style="margin-top:10px">
+                <button id="addAeroBtn">AGREGAR AERONAVE</button>
+              </div>
+            </div>
+
+            <!-- Libros view -->
+            <div id="librosView" class="hidden">
+              <h3>Libros de Vuelo</h3>
+              <div id="librosList" class="list" style="margin-top:8px"></div>
+              <div style="margin-top:10px"><button id="registrarLibroBtn">REGISTRAR LIBRO DE VUELO</button></div>
+            </div>
+
+            <!-- Solicitudes view -->
+            <div id="solicitudesView" class="hidden">
+              <h3>Solicitudes</h3>
+              <div id="solList" class="list" style="margin-top:8px"></div>
+              <div style="margin-top:10px"><button id="solicitarBtn">SOLICITAR CERTIFICACION</button></div>
+            </div>
+
+            <!-- Rangos view -->
+            <div id="rangosView" class="hidden">
+              <h3>Rangos</h3>
+              <div id="rangosList" class="list" style="margin-top:8px"></div>
+              <div style="margin-top:10px"><button id="addRangoBtn">AGREGAR RANGO</button></div>
+            </div>
+
+            <!-- Resumen view -->
+            <div id="resumenView" class="hidden">
+              <h3>Resumen</h3>
+              <div id="resumenArea" style="margin-top:8px"></div>
+            </div>
+
+            <!-- Detalle piloto -->
+            <div id="pilotDetail" class="hidden" style="margin-top:12px"></div>
+          </div>
+        </div>
+
+        <!-- SIDEBAR -->
+        <div>
+          <div id="sidebar" class="card">
+            <h4>Acciones</h4>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <button id="refreshBtn" class="btn-ghost">Actualizar datos</button>
+              <div class="small">SCRIPT_URL configurado en el código</div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:12px">
+            <h4>Documento</h4>
+            <div class="small">La <a class="link" target="_blank" id="cartaLink" href="https://docs.google.com/document/d/1KatX3AWuzmWhmYO-Z-SyaedXsY6YgsgE1_tB9AcaQ4c/edit?usp=drive_link">CARTA DE COMPROMISO</a> ya está enlazada.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="small center">Demo funcional • Reemplaza la URL del Apps Script en el código JS del index</footer>
   </div>
 
-  <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw20CDGXsntBrfDJAVoOQQLM8AzoNbxn3qJEyXgNmERrJsBscYOyKsEjwe-YBuq6XH3Ng/exec"; // <- Pega tu WebApp URL
+<script>
+/* -----------------------
+  CONFIG: pega aquí tu deploy URL del Apps Script
+  Ejemplo: const SCRIPT_URL = "https://script.google.com/macros/s/AKfy.../exec";
+------------------------*/
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxPz-JzffiyclkyfI1O1r0wPEV8Ow6k31oFVp15-hcSZWREtg1PySaUHafyAuIK5gpl/exec";
 
-    async function login() {
-      const email = document.getElementById("email").value.trim();
-      const password = document.getElementById("password").value.trim();
-      const msgBox = document.getElementById("msg");
+/* Estado */
+let currentUser = null;
+let pilotosCache = [];
+let aeronavesCache = [];
+let librosCache = [];
+let solicitudesCache = [];
+let rangosCache = [];
 
-      if (!email || !password) {
-        msgBox.innerHTML = "❌ Ingresa correo y contraseña";
-        msgBox.style.color = "red";
-        return;
-      }
+/* UTIL fetch wrapper */
+async function api(action, body) {
+  const payload = Object.assign({}, body || {});
+  payload.action = action;
+  const resp = await fetch(SCRIPT_URL, {
+    method: "POST",
+    body: JSON.stringify(payload),
+    headers: { "Content-Type":"application/json" }
+  });
+  return await resp.json();
+}
 
-      try {
-        const res = await fetch(`${SCRIPT_URL}?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`);
-        const data = await res.json();
+/* Inicial */
+document.addEventListener("DOMContentLoaded", ()=>{
+  document.getElementById("loginBtn").addEventListener("click", doLogin);
+  document.getElementById("demoFill").addEventListener("click", ()=>{document.getElementById("loginEmail").value="admin@lsaf.gov.us";document.getElementById("loginPassword").value="Admin123"});
+  document.getElementById("logoutBtn").addEventListener("click", logout);
+  document.getElementById("navPilotos").addEventListener("click", showPilotos);
+  document.getElementById("navAeronaves").addEventListener("click", showAeronaves);
+  document.getElementById("navLibros").addEventListener("click", showLibros);
+  document.getElementById("navSolicitudes").addEventListener("click", showSolicitudes);
+  document.getElementById("navRangos").addEventListener("click", showRangos);
+  document.getElementById("navResumen").addEventListener("click", showResumen);
+  document.getElementById("addPilotBtn").addEventListener("click", openAddPilotModal);
+  document.getElementById("refreshBtn").addEventListener("click", refreshAll);
+  document.getElementById("addAeroBtn")?.addEventListener("click", openAddAeroModal);
+  document.getElementById("registrarLibroBtn")?.addEventListener("click", openRegistrarLibroModal);
+  document.getElementById("solicitarBtn")?.addEventListener("click", openSolicitarModal);
+  document.getElementById("addRangoBtn")?.addEventListener("click", openAddRangoModal);
+});
 
-        if (data.status === "success") {
-          msgBox.innerHTML = "✅ Bienvenido " + data.piloto + " (NUIM: " + data.nuim + ")";
-          msgBox.style.color = "lightgreen";
-          // Aquí puedes redirigir a la lista de pilotos
-          // window.location.href = "pilotos.html";
-        } else {
-          msgBox.innerHTML = "❌ " + data.message;
-          msgBox.style.color = "red";
-        }
-      } catch(err) {
-        msgBox.innerHTML = "❌ Error de conexión";
-        msgBox.style.color = "red";
-        console.error(err);
-      }
-    }
-  </script>
+/* LOGIN */
+async function doLogin(){
+  const email = document.getElementById("loginEmail").value;
+  const pwd = document.getElementById("loginPassword").value;
+  const r = await api("login",{email, password: pwd});
+  if (!r.ok){ document.getElementById("loginMsg").innerText = r.error || "error"; return; }
+  currentUser = r.user;
+  document.getElementById("loginView").classList.add("hidden");
+  document.getElementById("appView").classList.remove("hidden");
+  document.getElementById("userName").innerText = currentUser.PILOTO || currentUser.EMAIL;
+  document.getElementById("loggedInfo").classList.remove("hidden");
+  await refreshAll();
+  showPilotos();
+}
+
+/* LOGOUT */
+function logout(){
+  currentUser = null;
+  document.getElementById("loginView").classList.remove("hidden");
+  document.getElementById("appView").classList.add("hidden");
+  document.getElementById("loggedInfo").classList.add("hidden");
+}
+
+/* REFRESH ALL caches */
+async function refreshAll(){
+  pilotosCache = (await api("getPilotos")).data || [];
+  aeronavesCache = (await api("getAeronaves")).data || [];
+  librosCache = (await api("getLibros")).data || [];
+  solicitudesCache = (await api("getSolicitudes")).data || [];
+  rangosCache = (await api("getRangos")).data || [];
+  // sort pilotos by rango (escalafon) - but we don't have ranking numeric, so sort by RANGO text descending
+  pilotosCache.sort((a,b)=> (b.RANGO||"").localeCompare(a.RANGO||"") || (a.PILOTO||"").localeCompare(b.PILOTO||""));
+  renderPilotosList();
+  renderAeronaves();
+  renderLibros();
+  renderSolicitudes();
+  renderRangos();
+}
+
+/* RENDER PILOTOS */
+function renderPilotosList(){
+  const list = document.getElementById("pilotsList");
+  list.innerHTML = "";
+  pilotosCache.forEach(p=>{
+    const div = document.createElement("div");
+    div.className = "pilot";
+    const img = document.createElement("img");
+    img.src = p.IMAGE_URL || "https://via.placeholder.com/56x56.png?text=INS";
+    const info = document.createElement("div");
+    info.innerHTML = `<div style="font-weight:600">${p.PILOTO || p.EMAIL}</div><div class="small">NUIM: ${p.NUIM || ""}</div>`;
+    const btn = document.createElement("div");
+    btn.style.marginLeft = "auto";
+    const viewBt = document.createElement("button"); viewBt.innerText = "Ver perfil";
+    viewBt.addEventListener("click", ()=>openPilotDetail(p.EMAIL));
+    btn.appendChild(viewBt);
+    div.appendChild(img); div.appendChild(info); div.appendChild(btn);
+    list.appendChild(div);
+  });
+}
+
+/* OPEN PILOT DETAIL */
+async function openPilotDetail(email){
+  const d = await api("getPiloto",{email});
+  if (!d.ok){ alert("Error: "+(d.error||"")); return; }
+  const p = d.piloto;
+  const container = document.getElementById("pilotDetail");
+  container.classList.remove("hidden");
+  container.innerHTML = `
+    <div style="display:flex;gap:12px">
+      <img src="${p.IMAGE_URL || 'https://via.placeholder.com/120'}" style="width:120px;height:120px;border-radius:8px;object-fit:cover"/>
+      <div style="flex:1">
+        <h3>${p.PILOTO}</h3>
+        <div class="small">NUIM: ${p.NUIM}</div>
+        <div class="small">RANGO: ${p.RANGO || "—"}</div>
+        <div class="small">EMAIL: ${p.EMAIL}</div>
+        <div style="margin-top:8px"><button id="editPilotBtn">EDITAR PILOTO</button></div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
+      <div class="card">
+        <h4>FICHA DEL PILOTO</h4>
+        <div class="small">FECHA NAC: ${p.FECHA_NACIMIENTO || ""}</div>
+        <div class="small">TIPO SANGRE: ${p.TIPO_SANGRE || ""}</div>
+        <div class="small">NACIONALIDAD: ${p.NACIONALIDAD || ""}</div>
+        <div style="margin-top:8px"><button id="editFichaBtn">EDITAR FICHA</button></div>
+      </div>
+      <div class="card">
+        <h4>ASCENSOS / DESCENSOS</h4>
+        <div id="ascList"></div>
+        <div style="margin-top:8px"><button id="addAscBtn">AÑADIR ASCENSO/DESCENSO</button></div>
+      </div>
+    </div>
+
+    <div style="margin-top:12px" class="card">
+      <h4>LIBROS DE VUELO</h4>
+      <div id="pilotLibros"></div>
+    </div>
+
+    <div style="margin-top:12px" class="card">
+      <h4>SOLICITUDES</h4>
+      <div id="pilotSols"></div>
+    </div>
+
+    <div style="margin-top:12px" class="card">
+      <h4>RESUMEN DE TIEMPOS</h4>
+      <div id="tiemposSummary"></div>
+    </div>
+  `;
+  // fill ascensos, libros, solicitudes, tiempos
+  const asc = d.ascensos || [];
+  const ascList = container.querySelector("#ascList");
+  ascList.innerHTML = asc.map(a=>`<div class="small">${a.FECHA} • ${a.RANGO}</div>`).join("");
+  const libList = container.querySelector("#pilotLibros");
+  libList.innerHTML = (d.libros||[]).map(l=>`<div class="small">${l.LIBRO} • ${l.AERONAVE} • ${l.HORA_DESPEGUE} → ${l.HORA_ATERRIZAJE} • ${msToTime(l.TIEMPO_TOTAL_MS)}</div>`).join("");
+  const sols = container.querySelector("#pilotSols");
+  sols.innerHTML = (d.solicitudes||[]).map(s=>`<div class="small">${s.SOLICITUD} • ${s.AERONAVE} • ${s.ESTADO}</div>`).join("");
+  const tiempos = container.querySelector("#tiemposSummary");
+  tiempos.innerHTML = `<div class="small">TIEMPO TOTAL: ${msToTime(d.tiempos.total_ms)}</div>` + Object.entries(d.tiempos.por_aeronave).map(([a,t])=>`<div class="small">${a}: ${msToTime(t)}</div>`).join("");
+
+  // handlers
+  container.querySelector("#addAscBtn").addEventListener("click", ()=>openAddAscModal(p.EMAIL, p.PILOTO));
+  container.querySelector("#editPilotBtn").addEventListener("click", ()=>openEditPilotModal(p));
+  container.querySelector("#editFichaBtn").addEventListener("click", ()=>openEditFichaModal(p));
+}
+
+/* UTIL: ms to H:MM */
+function msToTime(ms){
+  ms = Number(ms) || 0;
+  const s = Math.floor(ms/1000);
+  const h = Math.floor(s/3600);
+  const m = Math.floor((s%3600)/60);
+  return `${h}h ${m}m`;
+}
+
+/* SHOW VIEWS helpers */
+function hideAllViews(){
+  ["pilotosView","aeronavesView","librosView","solicitudesView","rangosView","resumenView","pilotDetail"].forEach(id=>document.getElementById(id).classList.add("hidden"));
+}
+function showPilotos(){ hideAllViews(); document.getElementById("pilotosView").classList.remove("hidden"); }
+function showAeronaves(){ hideAllViews(); document.getElementById("aeronavesView").classList.remove("hidden"); }
+function showLibros(){ hideAllViews(); document.getElementById("librosView").classList.remove("hidden"); }
+function showSolicitudes(){ hideAllViews(); document.getElementById("solicitudesView").classList.remove("hidden"); }
+function showRangos(){ hideAllViews(); document.getElementById("rangosView").classList.remove("hidden"); }
+function showResumen(){ hideAllViews(); document.getElementById("resumenView").classList.remove("hidden"); loadResumen(); }
+
+/* RENDER AERONAVES */
+function renderAeronaves(){
+  const container = document.getElementById("aeronavList");
+  container.innerHTML = "";
+  aeronavesCache.forEach(a=>{
+    const node = document.createElement("div");
+    node.className = "pilot";
+    node.innerHTML = `<img src="${a.IMAGE_URL||'https://via.placeholder.com/56'}"/><div><div style="font-weight:600">${a.CALLSIGN}</div><div class="small">${a.MODELO}</div></div><div style="margin-left:auto"><button class="btn-ghost">EDITAR</button></div>`;
+    container.appendChild(node);
+  });
+}
+
+/* RENDER LIBROS */
+function renderLibros(){
+  const container = document.getElementById("librosList");
+  container.innerHTML = "";
+  librosCache.sort((a,b)=> (b.LIBRO||"").localeCompare(a.LIBRO||""));
+  librosCache.forEach(l=>{
+    const n = document.createElement("div");
+    n.className = "pilot";
+    n.innerHTML = `<div style="font-weight:600">${l.LIBRO}</div><div class="small">${l.AERONAVE} • ${l.HORA_DESPEGUE}</div>`;
+    container.appendChild(n);
+  });
+}
+
+/* RENDER SOLICITUDES */
+function renderSolicitudes(){
+  const container = document.getElementById("solList");
+  container.innerHTML = "";
+  solicitudesCache.sort((a,b)=> (b.SOLICITUD||"").localeCompare(a.SOLICITUD||""));
+  solicitudesCache.forEach(s=>{
+    const n = document.createElement("div");
+    n.className = "pilot";
+    n.innerHTML = `<div style="font-weight:600">${s.SOLICITUD}</div><div class="small">${s.PILOTO_EMAIL} • ${s.AERONAVE} • ${s.ESTADO}</div>`;
+    n.addEventListener("click", ()=>openSolicitudDetail(s));
+    container.appendChild(n);
+  });
+}
+
+/* RENDER RANGOS */
+function renderRangos(){
+  const container = document.getElementById("rangosList");
+  container.innerHTML = "";
+  rangosCache.forEach(r=>{
+    const n = document.createElement("div");
+    n.className = "pilot";
+    n.innerHTML = `<img src="${r.IMAGE_URL||'https://via.placeholder.com/56'}"/><div><div style="font-weight:600">${r.NOMBRE}</div><div class="small">Escalafón: ${r.ESCALAFON}</div></div>`;
+    container.appendChild(n);
+  });
+}
+
+/* RESUMEN */
+async function loadResumen(){
+  const r = await api("getResumen", {});
+  if (!r.ok){ document.getElementById("resumenArea").innerText = "Error: " + (r.error||""); return; }
+  const area = document.getElementById("resumenArea");
+  area.innerHTML = `<div class="small">TIEMPO TOTAL (todos): ${msToTime(r.total_ms)}</div>` + Object.entries(r.por_aeronave).map(([a,t])=>`<div class="small">${a}: ${msToTime(t)}</div>`).join("") + `<div style="margin-top:8px"><strong>LIDERES:</strong> ${r.lideres.map(x=>x.PILOTO||x.EMAIL).join(", ")}</div>`;
+}
+
+/* FORM MODALS (simples via prompt for demo) */
+async function openAddPilotModal(){
+  const nombre = prompt("PILOTO - nombre completo:");
+  if (!nombre) return;
+  const email = prompt("EMAIL (ej: nombre_apellido@lsaf.gov.us):");
+  if (!email) return;
+  const nuim = prompt("NUIM:");
+  const fecha = prompt("FECHA DE INGRESO (yyyy-mm-dd):", new Date().toISOString().slice(0,10));
+  const rol = prompt("ROL (ADMIN, INSTRUCTOR, PILOTO):","PILOTO");
+  const estado = prompt("ESTADO (ACTIVO, ARCHIVADO):","ACTIVO");
+  const pwd = (estado==="ACTIVO")?prompt("Contraseña inicial (solo demo):","pass123"):"";
+  const r = await api("addPiloto",{EMAIL: email, PILOTO: nombre, NUIM: nuim, FECHA_INGRESO: fecha, ROL: rol, ESTADO: estado, PASSWORD: pwd});
+  if (!r.ok) alert("Error: "+(r.error||""));
+  else { alert("Piloto creado"); await refreshAll(); showPilotos(); }
+}
+
+/* EDIT PILOTO (prompt) */
+function openEditPilotModal(p){
+  const nombre = prompt("NOMBRE:", p.PILOTO);
+  const nuim = prompt("NUIM:", p.NUIM);
+  const fecha = prompt("FECHA DE INGRESO:", p.FECHA_INGRESO || new Date().toISOString().slice(0,10));
+  const rol = prompt("ROL (ADMIN, INSTRUCTOR, PILOTO):", p.ROL || "PILOTO");
+  const estado = prompt("ESTADO (ACTIVO, ARCHIVADO):", p.ESTADO || "ACTIVO");
+  const payload = {EMAIL: p.EMAIL, PILOTO: nombre, NUIM: nuim, FECHA_INGRESO: fecha, ROL: rol, ESTADO: estado};
+  api("editPiloto", payload).then(res=>{ if (!res.ok) alert("Error: "+(res.error||"")); else { alert("Actualizado"); refreshAll(); }});
+}
+
+/* EDIT FICHA (imagen/upload simple) */
+function openEditFichaModal(p){
+  const fechaN = prompt("FECHA DE NACIMIENTO (yyyy-mm-dd):", p.FECHA_NACIMIENTO || "");
+  const sangre = prompt("TIPO DE SANGRE:", p.TIPO_SANGRE || "");
+  const nac = prompt("NACIONALIDAD:", p.NACIONALIDAD || "");
+  api("editPiloto",{EMAIL:p.EMAIL, FECHA_NACIMIENTO: fechaN, TIPO_SANGRE: sangre, NACIONALIDAD: nac}).then(res=>{ if (!res.ok) alert(res.error||""); else { alert("Ficha guardada"); refreshAll(); }});
+}
+
+/* ADD ASCENSO */
+function openAddAscModal(email, nombre){
+  const fecha = prompt("FECHA ASCENSO (yyyy-mm-dd):", new Date().toISOString().slice(0,10));
+  const rango = prompt("RANGO (selecciona texto):");
+  // insignia: no implementada UI para subir imagen en prompt demo
+  api("addAscenso",{PILOTO_EMAIL: email, FECHA: fecha, RANGO: rango}).then(r=>{ if (!r.ok) alert(r.error||""); else { alert("Ascenso añadido"); refreshAll(); }});
+}
+
+/* ADD AERONAVE */
+function openAddAeroModal(){
+  const callsign = prompt("CALLSIGN:");
+  const modelo = prompt("MODELO:");
+  api("addAeronave",{CALLSIGN:callsign, MODELO:modelo}).then(r=>{ if (!r.ok) alert(r.error||""); else { alert("Aeronave agregada"); refreshAll(); }});
+}
+
+/* REGISTRAR LIBRO */
+async function openRegistrarLibroModal(){
+  const piloto = currentUser.EMAIL;
+  const aero = prompt("AERONAVE (selecciona una disponible):\n" + aeronavesCache.map(a=>a.CALLSIGN).join(", "));
+  const despegue = prompt("HORA DESPEGUE (YYYY-MM-DDTHH:MM) ejemplo 2025-09-22T10:00:");
+  const aterrizaje = prompt("HORA ATERRIZAJE (YYYY-MM-DDTHH:MM):");
+  // convert to compatible string
+  const r = await api("addLibro", {PILOTO_EMAIL: piloto, AERONAVE: aero, HORA_DESPEGUE: despegue, HORA_ATERRIZAJE: aterrizaje, RUTA:"-", MOTIVO: prompt("MOTIVO:"), OBSERVACIONES:"", CREADO_POR: piloto});
+  if (!r.ok) alert("Error: "+(r.error||""));
+  else { alert("Libro registrado: "+r.libro); refreshAll(); }
+}
+
+/* SOLICITAR CERTIFICACION */
+async function openSolicitarModal(){
+  const piloto = currentUser.EMAIL;
+  const nuim = currentUser.NUIM || prompt("NUIM:");
+  const rango = currentUser.RANGO || "";
+  const aero = prompt("AERONAVE (selecciona):\n" + aeronavesCache.map(a=>a.CALLSIGN).join(", "));
+  const disponibilidad = prompt("Disponibilidad:");
+  const agree = confirm("¿Acepta la CARTA DE COMPROMISO?");
+  const r = await api("addSolicitud",{PILOTO_EMAIL: piloto, NUIM: nuim, RANGO: rango, AERONAVE: aero, DISPONIBILIDAD: disponibilidad, AGREED: agree});
+  if (!r.ok) alert("Error: "+(r.error||""));
+  else { alert("Solicitud enviada: "+r.solicitud); refreshAll(); }
+}
+
+/* SOLICITUD DETAIL */
+function openSolicitudDetail(s){
+  alert("Solicitud: "+s.SOLICITUD + "\nPiloto: " + s.PILOTO_EMAIL + "\nAeronave: "+s.AERONAVE + "\nEstado: "+s.ESTADO);
+}
+
+/* ADD RANGO */
+function openAddRangoModal(){
+  const nombre = prompt("NOMBRE RANGO:");
+  const escal = prompt("ESCALAFON (numero o texto):");
+  api("addRango",{NOMBRE:nombre, ESCALAFON:escal}).then(r=>{ if (!r.ok) alert(r.error||""); else { alert("Rango agregado"); refreshAll(); }});
+}
+</script>
 </body>
 </html>
